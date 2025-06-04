@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BlogSphere</title>
+
+    <!-- FontAwesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+
+    <!-- Google Fonts & Material Icons -->
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Lato&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=Open+Sans&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined");
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: "Open Sans", sans-serif;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="webcrumbs">
+      <div class="mx-auto max-w-6xl bg-white">
+        <!-- ===== NAVBAR ===== -->
+        <nav class="bg-primary-600 shadow-lg sticky top-0 z-50">
+          <div class="px-6 py-4">
+            <div class="flex justify-between items-center">
+              <!-- Logo / Title -->
+              <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-bold text-white">BlogSphere</h1>
+                <span class="material-symbols-outlined text-white">code</span>
+              </div>
+
+              <!-- LOGIN FORM -->
+              <div class="flex items-center space-x-4">
+                <a href="login.html"
+                   class="bg-primary-700 text-white px-4 py-2 rounded-lg hover:bg-primary-800">
+                  Login
+              </a>
+                 
+                <a href="signup.html"
+                   class="bg-primary-700 text-white px-4 py-2 rounded-lg hover:bg-primary-800">
+                  Sign Up
+              </a>
+                <button class="md:hidden text-white">
+                  <span class="material-symbols-outlined">menu</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        <main class="min-h-screen">
+          <!-- ===== HERO SECTION ===== -->
+          <section class="bg-gradient-to-br from-primary-50 to-primary-100 px-6 py-16">
+            <div class="text-center max-w-4xl mx-auto">
+              <h2 class="text-5xl font-bold text-gray-900 mb-6">
+                Welcome to BlogSphere
+              </h2>
+              <p class="text-xl text-gray-700 mb-8">
+                Discover cutting‑edge technology insights, innovative
+                solutions, and expert perspectives.
+              </p>
+              <a
+                href="#postsContainer"
+                class="bg-primary-600 text-white px-8 py-4 rounded-lg hover:bg-primary-700 font-medium text-lg shadow-lg hover:shadow-xl"
+              >
+                Start Reading
+              </a>
+            </div>
+          </section>
+
+          <!-- ===== LATEST POSTS ===== -->
+          <section class="px-6 py-16">
+            <div class="max-w-6xl mx-auto">
+              <h3 class="text-3xl font-bold text-gray-900 mb-12">Latest Posts</h3>
+
+              <!-- POSTS GRID -->
+              <div
+                id="postsContainer"
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+              ></div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: "#f3f1ff",
+                100: "#e9e5ff",
+                200: "#d5cfff",
+                300: "#b7a9ff",
+                400: "#9478ff",
+                500: "#7341ff",
+                600: "#631bff",
+                700: "#611bf8",
+                800: "#4607d0",
+                900: "#3c08aa",
+                DEFAULT: "#611bf8",
+              },
+            },
+          },
+        },
+      };
+    </script>
+
+    <script src="js/config.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <script src="js/posts.js" defer></script>
+  </body>
+</html>

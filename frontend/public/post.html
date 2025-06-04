@@ -1,0 +1,66 @@
+<!-- public/post.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BlogSphere – Post</title>
+
+  <!-- Tailwind (utility CSS only, no JS) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- optional: your own fonts / icons -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+</head>
+
+<body class="bg-neutral-50">
+
+  <!-- ▾▾▾ nav ▾▾▾ -->
+  <nav class="bg-blue-600 text-white shadow-lg">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold">BlogSphere</h1>
+      <a href="index.html" class="hover:underline">← Back to Feed</a>
+    </div>
+  </nav>
+
+  <main class="max-w-4xl mx-auto px-6 py-12">
+
+    <!-- Post container -->
+    <article id="post-container"
+             class="bg-white rounded-xl shadow p-8 mb-12">
+      <!-- postview.js will inject post content here -->
+    </article>
+
+    <!-- Comments -->
+    <section>
+      <h3 class="text-2xl font-bold mb-4">Comments</h3>
+      <div id="comments-container" class="space-y-6 mb-10">
+        <!-- postview.js will inject comments here -->
+      </div>
+
+      <!-- New Comment Form -->
+      <form id="new-comment-form" class="space-y-4">
+        <textarea id="comment-content" rows="4" required
+                  class="w-full p-4 border rounded-lg"
+                  placeholder="Share your thoughts…"></textarea>
+        <button type="submit"
+                class="bg-blue-600 text-white px-6 py-2 rounded-lg
+                       hover:bg-blue-700 transition">
+          Post Comment
+        </button>
+      </form>
+    </section>
+
+  </main>
+
+  <!-- global config (defines window.API_BASE) -->
+  <script src="js/config.js"></script>
+
+  <!-- auth logic (safe to load globally) -->
+  <script src="js/auth.js"></script>
+
+  <!-- logic for this single-post page -->
+  <script src="js/postview.js" defer></script>
+</body>
+</html>
