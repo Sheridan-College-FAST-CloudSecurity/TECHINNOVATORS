@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Profile – BlogoSphere</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  
+  <div id="navbar"></div>
+  <!-- Container -->
+  <div class="max-w-5xl mx-auto p-6">
+    <!-- User Info & Nav -->
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-3xl font-bold text-primary-700">My Profile</h2>
+        <p class="text-gray-600" id="user-email">Loading user info...</p>
+      </div>
+    </div>
+
+    <!-- My Posts -->
+    <section>
+      <h3 class="text-2xl font-semibold text-gray-800 mb-4">My Blogs</h3>
+      <div id="my-posts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </section>
+
+    <!-- Floating Add Blog Button -->
+    <button id="add-post-btn"
+            class="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg text-4xl font-bold z-50">
+      +
+    </button>
+  </div>
+
+  <!-- Add/Edit Blog Modal -->
+  <div id="post-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+      <h3 id="modal-title" class="text-xl font-semibold mb-4">Create New Blog</h3>
+      <form id="create-post-form" class="space-y-4">
+        <input type="text" id="post-title" required placeholder="Title" class="w-full border p-2 rounded" />
+        <textarea id="post-content" required placeholder="Content" rows="5" class="w-full border p-2 rounded"></textarea>
+        <div class="flex justify-end space-x-2">
+          <button type="button" id="close-modal" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/profile.js" defer></script>
+  <script src="js/navbar.js" defer></script>
+</body>
+</html>

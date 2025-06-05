@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
 
 from app.models.post import Post
 from app.models.like import Like
+from app.schemas.post_schema import PostRead
 from app.models.user import User
 from app.schemas.post import PostOut, PostCreate, PostUpdate
 from app.core.deps import get_db
@@ -54,6 +55,15 @@ def create_post(
         author_id=new_post.author_id,
         like_count=0
     )
+
+
+@router.get("/my", response_model=List[PostRead])
+def get_my_posts(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    posts = db.query(Post).filter(Post.author_id == current_user.id).order_by(Post.created_at.desc()).all()
+    return posts
 
 
 @router.get("/{post_id}", response_model=PostOut)
@@ -119,3 +129,5 @@ def delete_post(
     db.delete(post)
     db.commit()
     return {"detail": "Post deleted"}
+
+

@@ -17,12 +17,7 @@
 <body class="bg-neutral-50">
 
   <!-- ▾▾▾ nav ▾▾▾ -->
-  <nav class="bg-blue-600 text-white shadow-lg">
-    <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-      <h1 class="text-2xl font-bold">BlogSphere</h1>
-      <a href="index.html" class="hover:underline">← Back to Feed</a>
-    </div>
-  </nav>
+  <div id="navbar"></div>
 
   <main class="max-w-4xl mx-auto px-6 py-12">
 
@@ -56,6 +51,7 @@
 
   <!-- global config (defines window.API_BASE) -->
   <script src="js/config.js"></script>
+  <script src="js/navbar.js" defer></script>
 
   <!-- auth logic (safe to load globally) -->
   <script src="js/auth.js"></script>

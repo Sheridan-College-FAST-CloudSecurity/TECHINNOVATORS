@@ -1,13 +1,8 @@
 // public/js/auth.js
-// ────────────────────────────────────────────────
-// Expects window.API_BASE to be injected by config.js
-// DO NOT redeclare that global – just read it.
+const API = window.API_BASE;
+const LS_TOKEN_KEY = "token";
 
-const API          = window.API_BASE;    // shorthand used everywhere below
-const LS_TOKEN_KEY = "token";            // key shared by postView.js, etc.
-
-// ———————————————————————————————————————————————————————————
-// POST /login  (OAuth2‑password flow)
+// Login logic
 async function loginUser(event) {
   event.preventDefault();
 
@@ -22,11 +17,10 @@ async function loginUser(event) {
     const resp = await fetch(`${API}/api/v1/login`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ username, password })
+      body: new URLSearchParams({ username, password }),
     });
 
     if (!resp.ok) {
-      // FastAPI error shape: { "detail": "..." }
       const { detail = resp.statusText } = await resp.json().catch(() => ({}));
       throw new Error(detail);
     }
@@ -35,6 +29,8 @@ async function loginUser(event) {
     localStorage.setItem(LS_TOKEN_KEY, access_token);
     alert("Logged in successfully!");
     console.log(`⇢ stored ${token_type} token in localStorage`);
+
+    window.location.href = "index.html"; // Redirect to feed
   } catch (err) {
     console.error("Login failed:", err);
     alert(
@@ -45,5 +41,5 @@ async function loginUser(event) {
   }
 }
 
-// attach handler only if the form exists on this page
+// Attach login form handler
 document.getElementById("loginForm")?.addEventListener("submit", loginUser);

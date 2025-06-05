@@ -33,35 +33,11 @@
 
   <body>
     <div id="webcrumbs">
-      <div class="mx-auto max-w-6xl bg-white">
-        <!-- ===== NAVBAR ===== -->
-        <nav class="bg-primary-600 shadow-lg sticky top-0 z-50">
-          <div class="px-6 py-4">
-            <div class="flex justify-between items-center">
-              <!-- Logo / Title -->
-              <div class="flex items-center space-x-4">
-                <h1 class="text-2xl font-bold text-white">BlogSphere</h1>
-                <span class="material-symbols-outlined text-white">code</span>
-              </div>
+      <div class="bg-white">
 
-              <!-- LOGIN FORM -->
-              <div class="flex items-center space-x-4">
-                <a href="login.html"
-                   class="bg-primary-700 text-white px-4 py-2 rounded-lg hover:bg-primary-800">
-                  Login
-              </a>
-                 
-                <a href="signup.html"
-                   class="bg-primary-700 text-white px-4 py-2 rounded-lg hover:bg-primary-800">
-                  Sign Up
-              </a>
-                <button class="md:hidden text-white">
-                  <span class="material-symbols-outlined">menu</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </nav>
+        <!-- NAVBAR -->
+        <div id="navbar"></div>
+
 
         <main class="min-h-screen">
           <!-- ===== HERO SECTION ===== -->
@@ -126,6 +102,7 @@
     </script>
 
     <script src="js/config.js" defer></script>
+    <script src="js/navbar.js" defer></script>
     <script src="js/auth.js" defer></script>
     <script src="js/posts.js" defer></script>
   </body>

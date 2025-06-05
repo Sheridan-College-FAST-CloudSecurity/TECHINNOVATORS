@@ -6,6 +6,7 @@ from app.api.v1.auth_routes import router as auth_router
 from app.api.v1.comment_routes import router as comment_router
 from app.api.v1.like_routes import router as like_router
 from app.api.v1.post_routes import router as post_router
+
 from app.core.config import settings
 from fastapi import Request
 from fastapi.responses import Response
@@ -20,7 +21,7 @@ app = FastAPI(
 # If you want to allow any origin during development, you can use ["*"].
 
 origins = [
-    "https://turbo-space-computing-machine-j9vq5qw9g672pp66-8080.app.github.dev",
+    "https://turbo-space-computing-machine-j9vq5qw9g672pp66-8080.app.github.dev", "https://bug-free-guide-5grxpggpxj5537wrw-8080.app.github.dev"
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -80,7 +81,7 @@ app.include_router(comment_router, prefix="/api/v1/comments", tags=["Comments"])
 app.include_router(like_router, prefix="/api/v1/likes", tags=["Likes"])
 app.include_router(post_router, prefix="/api/v1/posts", tags=["Posts"])
 app.include_router(auth_router, prefix="/api/v1")
-
+app.include_router(post_router, prefix="/api/v1/posts", tags=["Posts"])
 
 @app.get("/ping", tags=["Health"])
 def ping():

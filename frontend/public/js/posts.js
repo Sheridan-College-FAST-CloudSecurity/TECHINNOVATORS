@@ -16,7 +16,7 @@ function createPostCard({ id, title, content, like_count }) {
     <article class="bg-white rounded-xl shadow hover:shadow-lg p-6">
       <h4 class="text-xl font-bold mb-2">${title}</h4>
       <p class="text-gray-600 mb-4 line-clamp-3">${content}</p>
-      <a href="post.html?id=${id}"
+      <a href="postview.html?id=${id}"
          class="text-primary-600 hover:underline">Read more</a>
       <span class="ml-2 text-sm text-gray-500">${like_count ?? 0} ❤</span>
     </article>`;
