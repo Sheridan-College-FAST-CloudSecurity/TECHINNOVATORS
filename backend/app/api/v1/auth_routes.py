@@ -10,6 +10,7 @@ from app.schemas.user_schema import UserCreate, UserRead  # Adjust path as neede
 from app.core.security import verify_password, create_access_token
 from app.services.auth_service import get_current_user
 from app.core.config import settings
+from app.core.security import get_password_hash
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -56,7 +57,7 @@ def signup(user_in: UserCreate, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(status_code=400, detail="Username or email already exists")
 
-    hashed_password = pwd_context.hash(user_in.password)
+    hashed_password = get_password_hash(user_in.password)
     new_user = User(
         username=user_in.username,
         email=user_in.email,

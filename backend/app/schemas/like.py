@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class LikeCreate(BaseModel):
     user_id: int
@@ -9,5 +9,4 @@ class LikeResponse(BaseModel):
     user_id: int
     post_id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

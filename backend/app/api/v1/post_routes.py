@@ -42,7 +42,7 @@ def create_post(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    new_post = Post(**post.dict(), author_id=current_user.id)
+    new_post = Post(**post.model_dump(), author_id=current_user.id)
     db.add(new_post)
     db.commit()
     db.refresh(new_post)

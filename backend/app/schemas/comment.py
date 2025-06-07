@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
 class CommentBase(BaseModel):
@@ -13,5 +13,4 @@ class CommentResponse(CommentBase):
     author_id: int  # ✅ Renamed to match model
     created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
