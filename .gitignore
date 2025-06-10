@@ -13,3 +13,5 @@ env/
 # OS Generated Files
 .DS_Store # macOS
 Thumbs.db # Windows
+
+.vscode/
