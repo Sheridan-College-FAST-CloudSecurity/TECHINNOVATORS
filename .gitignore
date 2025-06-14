@@ -21,3 +21,8 @@ Thumbs.db # Windows
 *.tfstate.backup
 crash.log
 .terraform.lock.hcl
+.env
+
+# Ignore AWS CLI installation files
+aws/
+awscliv2.zip
