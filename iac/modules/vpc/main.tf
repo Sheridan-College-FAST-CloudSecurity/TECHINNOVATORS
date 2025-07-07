@@ -4,7 +4,7 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = var.name      # <- tag to satisfy SCP condition
+    Name    = var.name # <- tag to satisfy SCP condition
     Project = "Blogosphere"
   }
 }
@@ -33,8 +33,8 @@ resource "aws_subnet" "public_b" {
   }
 }
 
-output "vpc_id"      { value = aws_vpc.main.id }
-output "subnet_ids"  { value = [aws_subnet.public_a.id, aws_subnet.public_b.id] }
+output "vpc_id" { value = aws_vpc.main.id }
+output "subnet_ids" { value = [aws_subnet.public_a.id, aws_subnet.public_b.id] }
 
 
 data "aws_availability_zones" "available" {

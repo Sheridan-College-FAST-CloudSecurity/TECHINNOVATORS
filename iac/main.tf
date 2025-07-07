@@ -63,11 +63,11 @@ module "sg" {
 # ❷ Data tier (RDS)
 #####################
 module "rds" {
-  source      = "./modules/rds"
-  sg_id       = module.sg.sg_id
-  subnet_ids  = module.vpc.subnet_ids
-  db_user     = var.db_user
-  db_pass     = var.db_pass
+  source     = "./modules/rds"
+  sg_id      = module.sg.sg_id
+  subnet_ids = module.vpc.subnet_ids
+  db_user    = var.db_user
+  db_pass    = var.db_pass
   depends_on = [
     aws_internet_gateway.gw,
     aws_route_table_association.subnet_1_assoc,
@@ -81,7 +81,7 @@ module "rds" {
 module "ec2" {
   source      = "./modules/ec2"
   sg_id       = module.sg.sg_id
-  subnet_id   = module.vpc.subnet_ids[0]         # put EC2 in first public subnet
+  subnet_id   = module.vpc.subnet_ids[0] # put EC2 in first public subnet
   key_name    = var.key_name
   repo_url    = var.repo_url
   db_endpoint = module.rds.endpoint

@@ -1,9 +1,20 @@
 resource "aws_instance" "app" {
-  ami           = "ami-0c02fb55956c7d316"   # Amazon Linux 2
-  instance_type = "t2.micro"
-  subnet_id     = var.subnet_id
+  ami                    = "ami-0c02fb55956c7d316" # Amazon Linux 2
+  instance_type          = "t2.micro"
+  subnet_id              = var.subnet_id
   vpc_security_group_ids = [var.sg_id]
-  key_name      = var.key_name
+  key_name               = var.key_name
+
+  # ---------- NEW ---------- #
+  metadata_options { # ✔ CKV_AWS_79 ★
+    http_tokens = "required"
+  }
+
+  root_block_device { # ✔ CKV_AWS_8  ★
+    encrypted   = true
+    volume_size = 10
+  }
+
 
   user_data = <<-EOF
     #!/bin/bash

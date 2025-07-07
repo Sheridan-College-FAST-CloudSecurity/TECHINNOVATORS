@@ -23,11 +23,11 @@ resource "aws_security_group" "blogosphere" {
 
   # PostgreSQL — allow EC2 <-> RDS within the SG
   ingress {
-    description              = "Postgres 5432 self"
-    from_port                = 5432
-    to_port                  = 5432
-    protocol                 = "tcp"
-    self                     = true
+    description = "Postgres 5432 self"
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    self        = true
   }
 
   egress {
