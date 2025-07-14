@@ -17,33 +17,39 @@ from app.core.seed import seed_data          # the function you already wrote
 
 from contextlib import asynccontextmanager
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("--- Application startup: Initializing database ---")
     try:
-        # Create all tables (if they don't exist)
-        # We are in async context, but SQLAlchemy init is sync.
-        # This runs before first request.
-        Base.metadata.create_all(bind=engine)
-        print("Database tables created/checked.")
+        # Attempt to drop all tables first for a clean slate in development
+        # This is aggressive and good for fresh deployments / re-deployments
+        Base.metadata.drop_all(bind=engine)
+        print("Existing database tables dropped (if any).")
     except Exception as e:
-        print(f"ERROR: Could not create database tables: {e}")
-        # Potentially re-raise or handle more gracefully in production
+        # Log if dropping fails, but don't stop startup if it's just due to non-existent DB/tables
+        print(f"WARNING: Could not drop existing database tables (may not exist, or connection issue): {e}")
+
+    try:
+        # Create all tables (must ensure models are imported as done above)
+        Base.metadata.create_all(bind=engine)
+        print("Database tables created.")
+    except Exception as e:
+        print(f"ERROR: Failed to create database tables: {e}")
+        # This is a critical error, so we re-raise it
         raise
 
-    db = SessionLocal()
+    db = SessionLocal() # Get a new session after tables are created
     try:
-        # Seed data
+        # Seed data only if the database is newly created/empty
         print("Seeding sample data...")
-        seed_data(db)
+        seed_data(db) # Your seed_data function already handles checking if user exists
         print("✔ Seed data inserted (or already existed).")
     except Exception as e:
         print(f"WARNING: Could not seed data (may already exist or other error): {e}")
     finally:
-        db.close()
+        db.close() # Always close the session
 
-    yield # Application is ready to handle requests
+    yield # Application is now ready to handle requests
 
     print("--- Application shutdown: Closing resources ---")
 
