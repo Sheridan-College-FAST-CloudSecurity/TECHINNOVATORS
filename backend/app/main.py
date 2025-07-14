@@ -20,37 +20,30 @@ from contextlib import asynccontextmanager
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("--- Application startup: Initializing database ---")
+    db = SessionLocal()
     try:
-        # Attempt to drop all tables first for a clean slate in development
-        # This is aggressive and good for fresh deployments / re-deployments
-        Base.metadata.drop_all(bind=engine)
-        print("Existing database tables dropped (if any).")
-    except Exception as e:
-        # Log if dropping fails, but don't stop startup if it's just due to non-existent DB/tables
-        print(f"WARNING: Could not drop existing database tables (may not exist, or connection issue): {e}")
-
-    try:
-        # Create all tables (must ensure models are imported as done above)
+        # Only create tables if they don't exist (skip the drop_all)
         Base.metadata.create_all(bind=engine, checkfirst=True)
-        print("Database tables created.")
-    except Exception as e:
-        print(f"ERROR: Failed to create database tables: {e}")
-        # This is a critical error, so we re-raise it
-        raise
-
-    db = SessionLocal() # Get a new session after tables are created
-    try:
-        # Seed data only if the database is newly created/empty
+        print("Database tables verified/created.")
+        
+        # Seed data
         print("Seeding sample data...")
-        seed_data(db) # Your seed_data function already handles checking if user exists
-        print("✔ Seed data inserted (or already existed).")
+        try:
+            seed_data(db)
+            print("✔ Seed data inserted.")
+        except Exception as e:
+            print(f"⚠ Seed data warning: {str(e)}")
+            
     except Exception as e:
-        print(f"WARNING: Could not seed data (may already exist or other error): {e}")
+        print(f"ERROR: Database initialization failed: {str(e)}")
+        # Only raise critical errors that prevent app from starting
+        if "already exists" not in str(e):  # Skip sequence conflicts
+            raise
     finally:
-        db.close() # Always close the session
+        db.close()
 
-    yield # Application is now ready to handle requests
-
+    yield  # App is now running
+    
     print("--- Application shutdown: Closing resources ---")
 
 
