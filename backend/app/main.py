@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
 
     try:
         # Create all tables (must ensure models are imported as done above)
-        Base.metadata.create_all(bind=engine)
+        Base.metadata.create_all(bind=engine, checkfirst=True)
         print("Database tables created.")
     except Exception as e:
         print(f"ERROR: Failed to create database tables: {e}")
