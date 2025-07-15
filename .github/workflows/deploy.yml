@@ -1,0 +1,83 @@
+name: Deploy to AWS EC2 (Docker App)
+
+on:
+  push:
+    branches:
+      - development # Trigger the pipeline when code is pushed to the 'development' branch
+
+# Define environment variables for the workflow
+env:
+  AWS_REGION: us-east-1 # Specify your AWS region
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest # Use the latest Ubuntu runner provided by GitHub Actions
+
+    steps:
+      - name: Checkout Code
+        # This action checks out your repository code so the workflow can access it.
+        uses: actions/checkout@v4
+
+      # --- AWS Credentials Configuration ---
+      # Option 1 (RECOMMENDED & SECURE): Configure AWS Credentials using GitHub Secrets
+      # These secrets (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN)
+      # must be created in your GitHub repository settings under 'Secrets and variables' -> 'Actions'.
+      # For AWS Academy temporary credentials, AWS_SESSION_TOKEN is crucial.
+      - name: Configure AWS Credentials from Secrets
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }} # Needed for AWS Academy temporary credentials
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Option 2 (FOR ILLUSTRATION/DEBUGGING ONLY - NOT SECURE FOR PRODUCTION): Hardcoded AWS Credentials
+      # Uncomment this block ONLY if you are testing and cannot use secrets,
+      # and replace the placeholder values. REMOVE IN PRODUCTION!
+      # - name: Configure Hardcoded AWS Credentials (DO NOT USE IN PRODUCTION!)
+      #   run: |
+      #     export AWS_ACCESS_KEY_ID="YOUR_HARDCODED_ACCESS_KEY_ID"
+      #     export AWS_SECRET_ACCESS_KEY="YOUR_HARDCODED_SECRET_ACCESS_KEY"
+      #     export AWS_SESSION_TOKEN="YOUR_HARDCODED_SESSION_TOKEN" # If using temporary creds
+      #     export AWS_DEFAULT_REGION="${{ env.AWS_REGION }}"
+      #     echo "Hardcoded credentials configured. REMOVE THIS IN PRODUCTION!"
+
+      # --- Terraform Setup ---
+      - name: Setup Terraform
+        # This action installs a specific version of Terraform.
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.x.x # Use a compatible Terraform version (e.g., 1.5.7, 1.6.x, 1.7.x)
+
+      - name: Terraform Init
+        # Initializes a Terraform working directory. This downloads providers and modules.
+        # 'working-directory' specifies the path to your main.tf file.
+        id: init
+        run: terraform init
+        working-directory: iac
+
+      - name: Terraform Plan
+        # Generates an execution plan for Terraform, showing what changes will be made.
+        id: plan
+        run: terraform plan -no-color # -no-color makes the output easier to read in logs
+        working-directory: iac
+
+      - name: Terraform Apply
+        # Applies the changes required to reach the desired state of the configuration.
+        # '-auto-approve' is used for non-interactive execution in CI/CD.
+        id: apply
+        run: terraform apply -auto-approve
+        working-directory: iac
+
+      - name: Capture Terraform Outputs (Optional)
+        # Captures outputs like EC2 IP or application URL after successful apply.
+        run: terraform output -json > terraform_outputs.json
+        working-directory: iac
+        
+      - name: Display Application URL (Optional)
+        run: |
+          APPLICATION_URL=$(jq -r '.application_url.value' iac/terraform_outputs.json)
+          echo "Your application URL is: $APPLICATION_URL"
+          echo "::notice file=README.md::Your application URL is: $APPLICATION_URL" # Adds a clickable link in GitHub Actions summary
+        working-directory: . # Run from root to access iac/terraform_outputs.json
+        if: always() # Always run this step even if previous steps fail, to show URL
