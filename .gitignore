@@ -26,3 +26,6 @@ crash.log
 # Ignore AWS CLI installation files
 aws/
 awscliv2.zip
+terraform_latest.zip
+terraform.zip
+AWSCLIV2.msi

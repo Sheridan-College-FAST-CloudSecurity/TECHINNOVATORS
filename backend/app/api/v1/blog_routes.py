@@ -12,7 +12,7 @@ from app.models.user import User
 from typing import List
 
 
-
+# Create a new router for the API
 router = APIRouter()
 
 def get_db():
