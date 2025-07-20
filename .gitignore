@@ -23,7 +23,7 @@ crash.log
 .terraform.lock.hcl
 .env
 
-# Ignore AWS CLI installation files
+# Ignore AWS CLI installation files.
 aws/
 awscliv2.zip
 terraform_latest.zip
