@@ -213,7 +213,7 @@ resource "aws_instance" "web_server" {
     http_tokens = "required"
   }
 
-  # Root block device for encryption at rest
+  # Root block device for encryption at rest.
   root_block_device { # ADDED: Ensure EBS encryption for the root volume
     encrypted = true
   }
