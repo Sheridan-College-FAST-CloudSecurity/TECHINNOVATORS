@@ -6,6 +6,15 @@ provider "aws" {
                        # us-east-1 (N. Virginia) is a common default.
 }
 
+
+terraform {
+  backend "s3" {
+    bucket = "techinnovators-tfstate-vinay"
+    key    = "techinnovators/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+
 # Data source to get available availability zones in the current region
 
 
