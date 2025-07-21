@@ -266,7 +266,8 @@ user_data = <<-EOF
       techinnovators-app
 
     echo "--- Deployment complete ---"
-EOF
+ EOF
+}
 # ----------------------------------------------------
 # Outputs (for easy access to deployed info)
 # ----------------------------------------------------
