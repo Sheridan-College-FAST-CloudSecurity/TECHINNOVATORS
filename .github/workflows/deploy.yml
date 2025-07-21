@@ -5,7 +5,7 @@ on:
     branches:
       - development # Trigger the pipeline when code is pushed to the 'development' branch
 
-# Define environment variables for the workflow
+# Define environment variables for the workflow.
 env:
   AWS_REGION: us-east-1 # Specify your AWS region
 
