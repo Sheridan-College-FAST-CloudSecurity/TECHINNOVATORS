@@ -220,65 +220,53 @@ resource "aws_instance" "web_server" {
 
 user_data = <<-EOF
     #!/bin/bash
-    set -e # Exit immediately if a command exits with a non-zero status.
+    set -e
 
     echo "--- Starting EC2 User Data Script for Docker Deployment ---"
 
-    # 1. System Update and Install Docker & Git
+    # Install Docker, Git, etc.
     sudo yum update -y
     sudo yum install -y git docker python3-pip
-    echo "Docker and Git installed."
-
-    # 2. Start and Enable Docker Service
     sudo systemctl start docker
     sudo systemctl enable docker
-    echo "Docker service started and enabled."
-
-    # 3. Add ec2-user to docker group
     sudo usermod -aG docker ec2-user
-    echo "ec2-user added to docker group (requires re-login for user to take effect)."
 
-    # 4. Clone the Application Repository
+    # Clone your repo
     REPO_DIR="/home/ec2-user/TECHINNOVATORS"
     sudo mkdir -p "$REPO_DIR"
     sudo chown ec2-user:ec2-user "$REPO_DIR"
-    sudo chmod 755 /home/ec2-user/ # Ensure home dir is traversable by others (good practice for web servers/files)
-    
-    echo "Cloning development branch of repository: https://github.com/Sheridan-College-FAST-CloudSecurity/TECHINNOVATORS.git"
     sudo git clone --branch development https://github.com/Sheridan-College-FAST-CloudSecurity/TECHINNOVATORS.git "$REPO_DIR"
-    echo "Repository cloned successfully."
-
-    # 5. Navigate to the project root and Build Docker Image
     cd "$REPO_DIR"
-    echo "Building Docker image 'techinnovators-app'..."
-    sudo docker build -t techinnovators-app .
-    echo "Docker image built."
 
-    # 6. Run Docker Container
-    # Retrieve RDS Endpoint & Credentials from Terraform outputs for environment variables
-    # Terraform interpolates these values before the script runs.
-    # IMPORTANT: Use $$ to escape shell variables that are defined within the script.
+    echo "Building Docker image..."
+    sudo docker build -t techinnovators-app .
+
+    # RDS credentials from Terraform interpolation
     RDS_ENDPOINT="${aws_db_instance.postgresql_db.address}"
     RDS_PORT="${aws_db_instance.postgresql_db.port}"
     RDS_DB_NAME="${aws_db_instance.postgresql_db.db_name}"
     RDS_USERNAME="${aws_db_instance.postgresql_db.username}"
-    RDS_PASSWORD="${aws_db_instance.postgresql_db.password}" 
+    RDS_PASSWORD="${aws_db_instance.postgresql_db.password}"
 
-    # Construct SQLALCHEMY_DATABASE_URL using the SHELL variables
-    SQLALCHEMY_URL="postgresql://$$RDS_USERNAME:$$RDS_PASSWORD@$$RDS_ENDPOINT:$$RDS_PORT/$$RDS_DB_NAME" # <--- CRITICAL FIX: Use $$
+    SQLALCHEMY_URL="postgresql://$${RDS_USERNAME}:$${RDS_PASSWORD}@$${RDS_ENDPOINT}:$${RDS_PORT}/$${RDS_DB_NAME}"
 
-    echo "Running Docker container 'blog-app'..."
+    echo "Waiting for RDS to become available at $${RDS_ENDPOINT}..."
+    until nc -zv $${RDS_ENDPOINT} $${RDS_PORT}; do
+      echo "Still waiting for RDS..."
+      sleep 5
+    done
+    echo "✅ RDS is reachable."
+
+    echo "Starting Docker container..."
     sudo docker run -d \
-        --name blog-app \
-        -p 80:8000 \
-        -e "SQLALCHEMY_DATABASE_URL=$$SQLALCHEMY_URL" \ # <--- CRITICAL FIX: Use $$
-        -e "SECRET_KEY=your-super-secret-key-for-jwt-change-this-for-prod" \
-        techinnovators-app
+      --name blog-app \
+      -p 80:8000 \
+      -e "SQLALCHEMY_DATABASE_URL=$${SQLALCHEMY_URL}" \
+      -e "SECRET_KEY=your-super-secret-key" \
+      techinnovators-app
 
-    echo "Docker container launched."
-    echo "--- EC2 User Data Script for Docker Deployment Complete ---"
-  EOF
-}
+    echo "--- Deployment complete ---"
+EOF
 # ----------------------------------------------------
 # Outputs (for easy access to deployed info)
 # ----------------------------------------------------
