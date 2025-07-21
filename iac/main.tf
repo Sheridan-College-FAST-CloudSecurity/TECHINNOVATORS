@@ -269,7 +269,7 @@ user_data = <<-EOF
  EOF
 }
 # ----------------------------------------------------
-# Outputs (for easy access to deployed info)
+# Outputs (for easy access to deployed info).
 # ----------------------------------------------------
 
 output "ec2_public_ip" {
