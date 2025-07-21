@@ -1,5 +1,0 @@
-- name: Install dependencies (frontend)
-  if: ${{ exists('frontend/package.json') }}
-  run: |
-    cd frontend
-    npm install
