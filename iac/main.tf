@@ -139,7 +139,8 @@ resource "aws_security_group" "rds_sg" {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    security_groups = [aws_security_group.ec2_sg.id] # Only allow traffic from our EC2
+    cidr_blocks = ["10.0.1.0/24"]  # EC2 subnet range
+    #security_groups = [aws_security_group.ec2_sg.id] # Only allow traffic from our EC2
     description = "Allow inbound PostgreSQL from EC2 SG" # ADDED DESCRIPTION
   }
 
@@ -182,7 +183,7 @@ resource "aws_db_instance" "postgresql_db" {
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
   db_subnet_group_name = aws_db_subnet_group.main.name
   skip_final_snapshot  = true                   # Skip final snapshot on deletion for quicker cleanup
-  publicly_accessible  = false                  # RDS should never be publicly accessible
+  publicly_accessible  = true                  # RDS should never be publicly accessible
   storage_encrypted    = false                   # ADDED: Ensure data at rest is encrypted
   performance_insights_enabled = true          # ADDED: Enable performance insights
   apply_immediately    = true                   # ADDED: Apply minor version upgrades immediately
