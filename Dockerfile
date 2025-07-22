@@ -33,6 +33,5 @@ EXPOSE 8000
 ENV SQLALCHEMY_DATABASE_URL="postgresql://user:password@host:port/db"
 ENV SECRET_KEY="default-secret-key-for-dev"
 
-# Define the command to run the application using Gunicorn
-# This will start your FastAPI app from the 'backend' directory
-CMD bash -c "export PYTHONPATH=/app/backend && /usr/local/bin/python -m gunicorn -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 backend.app.main:app"
+ENV PYTHONPATH=/app/backend
+CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000", "backend.app.main:app"]
