@@ -165,17 +165,19 @@ resource "aws_instance" "web_server" {
     exec > /var/log/user-data.log 2>&1
     set -xe
 
-    yum update -y
-    yum install -y git docker python3-pip nc
-    systemctl start docker
-    systemctl enable docker
-    usermod -aG docker ec2-user
+    sudo yum update -y
+    sudo yum install -y git docker python3-pip nc
+    sudo systemctl start docker
+    sudo systemctl enable docker
+    sudo usermod -aG docker ec2-user
 
     REPO_DIR="/home/ec2-user/TECHINNOVATORS"
-    git clone --branch development https://github.com/Sheridan-College-FAST-CloudSecurity/TECHINNOVATORS.git "$REPO_DIR"
+    sudo mkdir -p "$REPO_DIR"
+    sudo chown ec2-user:ec2-user "$REPO_DIR"
+    sudo git clone --branch development https://github.com/Sheridan-College-FAST-CloudSecurity/TECHINNOVATORS.git "$REPO_DIR"
     cd "$REPO_DIR"
 
-    docker build -t techinnovators-app .
+    sudo docker build -t techinnovators-app .
 
     RDS_ENDPOINT="${aws_db_instance.postgresql_db.address}"
     RDS_PORT="${aws_db_instance.postgresql_db.port}"
@@ -189,8 +191,12 @@ resource "aws_instance" "web_server" {
       echo "Waiting for RDS at $${RDS_ENDPOINT}..."
       sleep 5
     done
+    
+    # 💡 NEW: Ensure old container is removed before creating a new one
+    echo "Checking for existing Docker container..."
+    sudo docker rm -f blog-app 2>/dev/null || true
 
-    docker run -d \
+    sudo docker run -d \
       --name blog-app \
       -p 80:8000 \
       -e "SQLALCHEMY_DATABASE_URL=$${SQLALCHEMY_URL}" \
