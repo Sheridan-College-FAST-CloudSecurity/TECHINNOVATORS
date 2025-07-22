@@ -134,6 +134,6 @@ def ping():
     return {"status": "ok"}
 
 
-# Serve static files from the 'frontend/public' directory relative to /app
+# Serve static files from the 'frontend/public' directory relative to /app.
 # This makes FastAPI directly serve your HTML, CSS, JS, etc.
 app.mount("/", StaticFiles(directory="frontend/public", html=True), name="static")
