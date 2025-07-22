@@ -29,7 +29,7 @@ COPY frontend/public/ ./frontend/public/
 EXPOSE 8000
 
 # Set environment variables for the application (will be overridden by systemd service)
-# These are default values if not explicitly set via docker run -e
+# These are default values if not explicitly set via docker run -e.
 ENV SQLALCHEMY_DATABASE_URL="postgresql://user:password@host:port/db"
 ENV SECRET_KEY="default-secret-key-for-dev"
 
