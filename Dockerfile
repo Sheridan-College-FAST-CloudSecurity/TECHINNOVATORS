@@ -33,5 +33,5 @@ EXPOSE 8000
 ENV SQLALCHEMY_DATABASE_URL="postgresql://user:password@host:port/db"
 ENV SECRET_KEY="default-secret-key-for-dev"
 
-ENV PYTHONPATH=/app/backend
+ENV PYTHONPATH=/app
 CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000", "backend.app.main:app"]
