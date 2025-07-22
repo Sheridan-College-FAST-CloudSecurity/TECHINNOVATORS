@@ -176,7 +176,7 @@ resource "aws_instance" "web_server" {
     sudo chown ec2-user:ec2-user "$REPO_DIR"
     sudo git clone --branch development https://github.com/Sheridan-College-FAST-CloudSecurity/TECHINNOVATORS.git "$REPO_DIR"
     cd "$REPO_DIR"
-
+    echo "Building Docker image..."
     sudo docker build -t techinnovators-app .
 
     RDS_ENDPOINT="${aws_db_instance.postgresql_db.address}"
@@ -186,22 +186,26 @@ resource "aws_instance" "web_server" {
     RDS_PASSWORD="${aws_db_instance.postgresql_db.password}"
 
     SQLALCHEMY_URL="postgresql://$${RDS_USERNAME}:$${RDS_PASSWORD}@$${RDS_ENDPOINT}:$${RDS_PORT}/$${RDS_DB_NAME}"
-
+    echo "Waiting for RDS to be ready..."
     until nc -zv $${RDS_ENDPOINT} $${RDS_PORT}; do
       echo "Waiting for RDS at $${RDS_ENDPOINT}..."
       sleep 5
     done
-    
+    echo "✅ RDS is reachable."
+
     # 💡 NEW: Ensure old container is removed before creating a new one
     echo "Checking for existing Docker container..."
     sudo docker rm -f blog-app 2>/dev/null || true
 
     sudo docker run -d \
       --name blog-app \
+      --memory="512m" \
+      --restart=always \
       -p 80:8000 \
       -e "SQLALCHEMY_DATABASE_URL=$${SQLALCHEMY_URL}" \
       -e "SECRET_KEY=your-super-secret-key" \
-      techinnovators-app
+      techinnovators-app \
+      gunicorn -k uvicorn.workers.UvicornWorker backend.main:app --bind 0.0.0.0:8000 -w 2
 
     echo "--- Deployment complete ---"
   EOF
