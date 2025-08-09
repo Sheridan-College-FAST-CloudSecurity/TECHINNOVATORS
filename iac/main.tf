@@ -57,7 +57,11 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
+#___________________________________________
+#NACL
+#------------------------------------------
 
+# Network ACL and rules
 resource "aws_network_acl" "public_acl" {
   vpc_id = aws_vpc.main.id
   subnet_ids = [aws_subnet.public.id]
@@ -171,6 +175,76 @@ resource "aws_security_group" "rds_sg" {
   tags = { Name = "TechInnovators-RDS-SG" }
 }
 
+# ----------------------------------------------------
+# S3 Bucket
+# ----------------------------------------------------
+
+resource "aws_s3_bucket" "blog_app_bucket" {
+  bucket = "techinnovators-blog-app-${random_pet.bucket_name.id}"
+  tags = {
+    Name = "TechInnovators-BlogAppBucket"
+  }
+}
+
+# For creating a unique S3 bucket name
+resource "random_pet" "bucket_name" {
+  length = 2
+}
+
+# S3 Bucket configuration is updated to enforce encryption and block public access.
+resource "aws_s3_bucket_server_side_encryption_configuration" "blog_app_bucket" {
+  bucket = aws_s3_bucket.blog_app_bucket.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256" # Enabled server-side encryption with AES-256.
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "blog_app_bucket_policy" {
+  bucket = aws_s3_bucket.blog_app_bucket.id
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid       = "AWSConfigBucketPermissionsCheck",
+        Effect    = "Allow",
+        Principal = {
+          Service = "config.amazonaws.com"
+        },
+        Action    = "s3:GetBucketAcl",
+        Resource  = aws_s3_bucket.blog_app_bucket.arn
+      },
+      {
+        Sid       = "AWSConfigBucketDelivery",
+        Effect    = "Allow",
+        Principal = {
+          Service = "config.amazonaws.com"
+        },
+        Action    = "s3:PutObject",
+        Resource  = "${aws_s3_bucket.blog_app_bucket.arn}/AWSConfig/*",
+        Condition = {
+          StringEquals = {
+            "s3:x-amz-acl" = "bucket-owner-full-control"
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_s3_bucket_public_access_block" "block_public_access" {
+  bucket                  = aws_s3_bucket.blog_app_bucket.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true # Blocked all public access.
+}
+
+# ----------------------------------------------------
+# RDS PostgreSQL Database
+# ----------------------------------------------------
+
 resource "aws_db_subnet_group" "main" {
   name       = "techinnovators-db-subnet-group"
   subnet_ids = [aws_subnet.private_az1.id, aws_subnet.private_az2.id]
@@ -264,6 +338,70 @@ resource "aws_instance" "web_server" {
     echo "--- Deployment complete ---"
   EOF
 }
+
+# ----------------------------------------------------
+# AWS Config & SRE Resources
+# ----------------------------------------------------
+
+# IMPORTANT: You can't create IAM roles in AWS Academy, you must use the pre-created "LabRole"
+# This data source retrieves the ARN for the LabRole.
+data "aws_iam_role" "lab_role" {
+  name = "LabRole"
+}
+
+resource "aws_config_configuration_recorder" "default" {
+  name     = "default"
+  role_arn = data.aws_iam_role.lab_role.arn
+}
+
+#resource "aws_config_delivery_channel" "default" {
+#  s3_bucket_name = aws_s3_bucket.blog_app_bucket.id
+#}
+
+resource "aws_config_config_rule" "s3_public_read_prohibited" {
+  name = "s3-bucket-public-read-prohibited"
+  source {
+    owner             = "AWS"
+    source_identifier = "S3_BUCKET_PUBLIC_READ_PROHIBITED"
+  }
+}
+
+resource "aws_config_config_rule" "restricted_ssh" {
+  name = "restricted-ssh-access"
+  source {
+    owner             = "AWS"
+    source_identifier = "EC2_INSTANCE_NO_PUBLIC_IP"
+  }
+}
+
+resource "aws_sns_topic" "alerts" {
+  name = "TechInnovators-Alerts"
+}
+
+resource "aws_cloudwatch_metric_alarm" "ec2_cpu_alarm" {
+  alarm_name          = "High_CPU_Utilization"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 80
+  alarm_description   = "This alarm will trigger if the average CPU utilization is too high."
+  alarm_actions       = [aws_sns_topic.alerts.arn]
+  dimensions = {
+    InstanceId = aws_instance.web_server.id
+  }
+}
+
+resource "aws_cloudwatch_log_group" "blog_app_logs" {
+  name            = "/ecs/blog-app-logs"
+  retention_in_days = 7
+}
+
+# ----------------------------------------------------
+# Outputs (for easy access to deployed info)
+# ----------------------------------------------------
 
 output "ec2_public_ip" {
   value = aws_instance.web_server.public_ip
