@@ -1,416 +1,270 @@
+# main.tf
+
 provider "aws" {
-  region = "us-east-1"
+  region = "us-east-1"
 }
 
 terraform {
-  backend "s3" {
-    bucket = "techinnovators-tfstate-vinay"
-    key    = "techinnovators/terraform.tfstate"
-    region = "us-east-1"
-  }
+  backend "s3" {
+    bucket = "techinnovators-tfstate-vinay"
+    key    = "techinnovators/terraform.tfstate"
+    region = "us-east-1"
+  }
 }
 
 resource "aws_vpc" "main" {
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_hostnames = true
-  tags = { Name = "TechInnovators-VPC" }
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+  tags = { Name = "TechInnovators-VPC" }
 }
 
 resource "aws_internet_gateway" "main" {
-  vpc_id = aws_vpc.main.id
-  tags = { Name = "TechInnovators-IGW" }
+  vpc_id = aws_vpc.main.id
+  tags = { Name = "TechInnovators-IGW" }
 }
 
 resource "aws_subnet" "public" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.0.1.0/24"
-  availability_zone       = "us-east-1a"
-  map_public_ip_on_launch = true
-  tags = { Name = "TechInnovators-PublicSubnet" }
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = "us-east-1a"
+  map_public_ip_on_launch = true
+  tags = { Name = "TechInnovators-PublicSubnet" }
 }
 
 resource "aws_subnet" "private_az1" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.4.0/24"
-  availability_zone = "us-east-1a"
-  tags = { Name = "TechInnovators-PrivateSubnet-AZ1" }
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.4.0/24"
+  availability_zone = "us-east-1a"
+  tags = { Name = "TechInnovators-PrivateSubnet-AZ1" }
 }
 
 resource "aws_subnet" "private_az2" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.3.0/24"
-  availability_zone = "us-east-1b"
-  tags = { Name = "TechInnovators-PrivateSubnet-AZ2" }
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = "us-east-1b"
+  tags = { Name = "TechInnovators-PrivateSubnet-AZ2" }
 }
 
 resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.main.id
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.main.id
-  }
-  tags = { Name = "TechInnovators-PublicRouteTable" }
+  vpc_id = aws_vpc.main.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+  tags = { Name = "TechInnovators-PublicRouteTable" }
 }
 
 resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.public.id
-  route_table_id = aws_route_table.public.id
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public.id
 }
 
-#___________________________________________
-#NACL
-#------------------------------------------
 
-# Network ACL and rules
 resource "aws_network_acl" "public_acl" {
-  vpc_id = aws_vpc.main.id
-  subnet_ids = [aws_subnet.public.id]
-  tags = {
-    Name = "TechInnovators-PublicACL"
-  }
+  vpc_id = aws_vpc.main.id
+  subnet_ids = [aws_subnet.public.id]
+  tags = {
+    Name = "TechInnovators-PublicACL"
+  }
 
-  # Inbound rules for ephemeral ports, SSH, HTTP, and HTTPS
-  ingress {
-    protocol   = "tcp"
-    rule_no    = 90
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 1024
-    to_port    = 65535
-  }
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 22
+    to_port    = 22
+  }
 
-  ingress {
-    protocol   = "tcp"
-    rule_no    = 100
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 22
-    to_port    = 22
-  }
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 110
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 80
+    to_port    = 80
+  }
 
-  ingress {
-    protocol   = "tcp"
-    rule_no    = 110
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 80
-    to_port    = 80
-  }
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 120
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 443
+    to_port    = 443
+  }
 
-  ingress {
-    protocol   = "tcp"
-    rule_no    = 120
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 443
-    to_port    = 443
-  }
-
-  egress {
-    protocol   = "-1"
-    rule_no    = 100
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 0
-    to_port    = 0
-  }
+  egress {
+    protocol   = "-1"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
+  }
 }
 
 
 resource "aws_security_group" "ec2_sg" {
-  name        = "techinnovators-ec2-sg"
-  description = "Allow HTTP, HTTPS, SSH inbound traffic to EC2"
-  vpc_id      = aws_vpc.main.id
+  name        = "techinnovators-ec2-sg"
+  description = "Allow HTTP, HTTPS, SSH inbound traffic to EC2"
+  vpc_id      = aws_vpc.main.id
 
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-  tags = { Name = "TechInnovators-EC2-SG" }
+  tags = { Name = "TechInnovators-EC2-SG" }
 }
 
 resource "aws_security_group" "rds_sg" {
-  name        = "techinnovators-rds-sg"
-  description = "Allow PostgreSQL traffic only from EC2 instance"
-  vpc_id      = aws_vpc.main.id
+  name        = "techinnovators-rds-sg"
+  description = "Allow PostgreSQL traffic only from EC2 instance"
+  vpc_id      = aws_vpc.main.id
 
-  ingress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    security_groups = [aws_security_group.ec2_sg.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = { Name = "TechInnovators-RDS-SG" }
-}
-
-# ----------------------------------------------------
-# S3 Bucket
-# ----------------------------------------------------
-
-resource "aws_s3_bucket" "blog_app_bucket" {
-  bucket = "techinnovators-blog-app-${random_pet.bucket_name.id}"
-  tags = {
-    Name = "TechInnovators-BlogAppBucket"
+  ingress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.1.0/24"]
   }
-}
 
-# For creating a unique S3 bucket name
-resource "random_pet" "bucket_name" {
-  length = 2
-}
-
-# S3 Bucket configuration is updated to enforce encryption and block public access.
-resource "aws_s3_bucket_server_side_encryption_configuration" "blog_app_bucket" {
-  bucket = aws_s3_bucket.blog_app_bucket.id
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256" # Enabled server-side encryption with AES-256.
-    }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
-}
 
-resource "aws_s3_bucket_policy" "blog_app_bucket_policy" {
-  bucket = aws_s3_bucket.blog_app_bucket.id
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Sid       = "AWSConfigBucketPermissionsCheck",
-        Effect    = "Allow",
-        Principal = {
-          Service = "config.amazonaws.com"
-        },
-        Action    = "s3:GetBucketAcl",
-        Resource  = aws_s3_bucket.blog_app_bucket.arn
-      },
-      {
-        Sid       = "AWSConfigBucketDelivery",
-        Effect    = "Allow",
-        Principal = {
-          Service = "config.amazonaws.com"
-        },
-        Action    = "s3:PutObject",
-        Resource  = "${aws_s3_bucket.blog_app_bucket.arn}/AWSConfig/*",
-        Condition = {
-          StringEquals = {
-            "s3:x-amz-acl" = "bucket-owner-full-control"
-          }
-        }
-      }
-    ]
-  })
+  tags = { Name = "TechInnovators-RDS-SG" }
 }
-
-resource "aws_s3_bucket_public_access_block" "block_public_access" {
-  bucket                  = aws_s3_bucket.blog_app_bucket.id
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true # Blocked all public access.
-}
-
-# ----------------------------------------------------
-# RDS PostgreSQL Database
-# ----------------------------------------------------
 
 resource "aws_db_subnet_group" "main" {
-  name       = "techinnovators-db-subnet-group"
-  subnet_ids = [aws_subnet.private_az1.id, aws_subnet.private_az2.id]
-  tags = { Name = "TechInnovators-DB-SubnetGroup" }
+  name       = "techinnovators-db-subnet-group"
+  subnet_ids = [aws_subnet.private_az1.id, aws_subnet.private_az2.id]
+  tags = { Name = "TechInnovators-DB-SubnetGroup" }
 }
 
 resource "aws_db_instance" "postgresql_db" {
-  allocated_storage           = 20
-  storage_type                = "gp2"
-  engine                      = "postgres"
-  engine_version              = "17.4"
-  instance_class              = "db.t3.micro"
-  db_name                     = "blogdb"
-  username                    = "adminuser"
-  password                    = "adminpassword"
-  vpc_security_group_ids      = [aws_security_group.rds_sg.id]
-  db_subnet_group_name        = aws_db_subnet_group.main.name
-  skip_final_snapshot         = true
-  publicly_accessible         = false
-  storage_encrypted           = true
-  performance_insights_enabled = true
-  apply_immediately           = true
-  copy_tags_to_snapshot       = true
-  tags = { Name = "TechInnovators-PostgreSQL-DB" }
+  allocated_storage           = 20
+  storage_type                = "gp2"
+  engine                      = "postgres"
+  engine_version              = "17.4"
+  instance_class              = "db.t3.micro"
+  db_name                     = "blogdb"
+  username                    = "adminuser"
+  password                    = "adminpassword"
+  vpc_security_group_ids      = [aws_security_group.rds_sg.id]
+  db_subnet_group_name        = aws_db_subnet_group.main.name
+  skip_final_snapshot         = true
+  publicly_accessible         = true
+  storage_encrypted           = false
+  performance_insights_enabled = true
+  apply_immediately           = true
+  copy_tags_to_snapshot       = true
+  tags = { Name = "TechInnovators-PostgreSQL-DB" }
 }
 
 resource "aws_instance" "web_server" {
-  ami                         = "ami-05ffe3c48a9991133"
-  instance_type               = "t3.micro"
-  key_name                    = "capstone"
-  subnet_id                   = aws_subnet.public.id
-  vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
-  associate_public_ip_address = true
-  monitoring                  = true
+  ami                         = "ami-05ffe3c48a9991133"
+  instance_type               = "t3.micro"
+  key_name                    = "capstone"
+  subnet_id                   = aws_subnet.public.id
+  vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
+  associate_public_ip_address = true
+  monitoring                  = true
 
-  metadata_options {
-    http_tokens = "required"
-  }
-
-  root_block_device {
-    encrypted = true
-  }
-
-  user_data = <<-EOF
-    #!/bin/bash
-    exec > /var/log/user-data.log 2>&1
-    set -xe
-
-    sudo yum update -y
-    sudo yum install -y git docker python3-pip nc
-    sudo systemctl start docker
-    sudo systemctl enable docker
-    sudo usermod -aG docker ec2-user
-
-    REPO_DIR="/home/ec2-user/TECHINNOVATORS"
-    sudo mkdir -p "$REPO_DIR"
-    sudo chown ec2-user:ec2-user "$REPO_DIR"
-    sudo git clone --branch development https://github.com/Sheridan-College-FAST-CloudSecurity/TECHINNOVATORS.git "$REPO_DIR"
-    cd "$REPO_DIR"
-    echo "Building Docker image..."
-    sudo docker build -t techinnovators-app .
-
-    RDS_ENDPOINT="${aws_db_instance.postgresql_db.address}"
-    RDS_PORT="${aws_db_instance.postgresql_db.port}"
-    RDS_DB_NAME="${aws_db_instance.postgresql_db.db_name}"
-    RDS_USERNAME="${aws_db_instance.postgresql_db.username}"
-    RDS_PASSWORD="${aws_db_instance.postgresql_db.password}"
-
-    SQLALCHEMY_URL="postgresql://$${RDS_USERNAME}:$${RDS_PASSWORD}@$${RDS_ENDPOINT}:$${RDS_PORT}/$${RDS_DB_NAME}"
-    echo "Waiting for RDS to be ready..."
-    until nc -zv $${RDS_ENDPOINT} $${RDS_PORT}; do
-      echo "Waiting for RDS at $${RDS_ENDPOINT}..."
-      sleep 5
-    done
-    echo "✅ RDS is reachable."
-
-    # 💡 NEW: Ensure old container is removed before creating a new one
-    echo "Checking for existing Docker container..."
-    sudo docker rm -f blog-app 2>/dev/null || true
-
-    sudo docker run -d \
-      --name blog-app \
-      --memory="512m" \
-      --restart=always \
-      -p 80:8000 \
-      -e "SQLALCHEMY_DATABASE_URL=$${SQLALCHEMY_URL}" \
-      -e "SECRET_KEY=your-super-secret-key" \
-      techinnovators-app \
-      gunicorn -k uvicorn.workers.UvicornWorker backend.main:app --bind 0.0.0.0:8000 -w 2
-
-    echo "--- Deployment complete ---"
-  EOF
-}
-
-# ----------------------------------------------------
-# AWS Config & SRE Resources
-# ----------------------------------------------------
-
-# IMPORTANT: You can't create IAM roles in AWS Academy, you must use the pre-created "LabRole"
-# This data source retrieves the ARN for the LabRole.
-data "aws_iam_role" "lab_role" {
-  name = "LabRole"
-}
-
-resource "aws_config_configuration_recorder" "default" {
-  name     = "default"
-  role_arn = data.aws_iam_role.lab_role.arn
-}
-
-#resource "aws_config_delivery_channel" "default" {
-#  s3_bucket_name = aws_s3_bucket.blog_app_bucket.id
-#}
-
-resource "aws_config_config_rule" "s3_public_read_prohibited" {
-  name = "s3-bucket-public-read-prohibited"
-  source {
-    owner             = "AWS"
-    source_identifier = "S3_BUCKET_PUBLIC_READ_PROHIBITED"
+  metadata_options {
+    http_tokens = "required"
   }
-}
 
-resource "aws_config_config_rule" "restricted_ssh" {
-  name = "restricted-ssh-access"
-  source {
-    owner             = "AWS"
-    source_identifier = "EC2_INSTANCE_NO_PUBLIC_IP"
+  root_block_device {
+    encrypted = true
   }
-}
 
-resource "aws_sns_topic" "alerts" {
-  name = "TechInnovators-Alerts"
-}
+  user_data = <<-EOF
+    #!/bin/bash
+    exec > /var/log/user-data.log 2>&1
+    set -xe
 
-resource "aws_cloudwatch_metric_alarm" "ec2_cpu_alarm" {
-  alarm_name          = "High_CPU_Utilization"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 2
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = 60
-  statistic           = "Average"
-  threshold           = 80
-  alarm_description   = "This alarm will trigger if the average CPU utilization is too high."
-  alarm_actions       = [aws_sns_topic.alerts.arn]
-  dimensions = {
-    InstanceId = aws_instance.web_server.id
-  }
-}
+    sudo yum update -y
+    sudo yum install -y git docker python3-pip nc
+    sudo systemctl start docker
+    sudo systemctl enable docker
+    sudo usermod -aG docker ec2-user
 
-resource "aws_cloudwatch_log_group" "blog_app_logs" {
-  name            = "/ecs/blog-app-logs"
-  retention_in_days = 7
-}
+    REPO_DIR="/home/ec2-user/TECHINNOVATORS"
+    sudo mkdir -p "$REPO_DIR"
+    sudo chown ec2-user:ec2-user "$REPO_DIR"
+    sudo git clone --branch development https://github.com/Sheridan-College-FAST-CloudSecurity/TECHINNOVATORS.git "$REPO_DIR"
+    cd "$REPO_DIR"
+    echo "Building Docker image..."
+    sudo docker build -t techinnovators-app .
 
-# ----------------------------------------------------
-# Outputs (for easy access to deployed info)
-# ----------------------------------------------------
+    RDS_ENDPOINT="${aws_db_instance.postgresql_db.address}"
+    RDS_PORT="${aws_db_instance.postgresql_db.port}"
+    RDS_DB_NAME="${aws_db_instance.postgresql_db.db_name}"
+    RDS_USERNAME="${aws_db_instance.postgresql_db.username}"
+    RDS_PASSWORD="${aws_db_instance.postgresql_db.password}"
+
+    SQLALCHEMY_URL="postgresql://$${RDS_USERNAME}:$${RDS_PASSWORD}@$${RDS_ENDPOINT}:$${RDS_PORT}/$${RDS_DB_NAME}"
+    echo "Waiting for RDS to be ready..."
+    until nc -zv $${RDS_ENDPOINT} $${RDS_PORT}; do
+      echo "Waiting for RDS at $${RDS_ENDPOINT}..."
+      sleep 5
+    done
+    echo "✅ RDS is reachable."
+
+    # 💡 NEW: Ensure old container is removed before creating a new one
+    echo "Checking for existing Docker container..."
+    sudo docker rm -f blog-app 2>/dev/null || true
+
+    sudo docker run -d \
+      --name blog-app \
+      --memory="512m" \
+      --restart=always \
+      -p 80:8000 \
+      -e "SQLALCHEMY_DATABASE_URL=$${SQLALCHEMY_URL}" \
+      -e "SECRET_KEY=your-super-secret-key" \
+      techinnovators-app \
+      gunicorn -k uvicorn.workers.UvicornWorker backend.main:app --bind 0.0.0.0:8000 -w 2
+
+    echo "--- Deployment complete ---"
+  EOF
+}
 
 output "ec2_public_ip" {
-  value = aws_instance.web_server.public_ip
+  value = aws_instance.web_server.public_ip
 }
 
 output "application_url" {
-  value = "http://${aws_instance.web_server.public_ip}"
+  value = "http://${aws_instance.web_server.public_ip}"
 }
 
 output "rds_endpoint" {
-  value = aws_db_instance.postgresql_db.address
+  value = aws_db_instance.postgresql_db.address
 }
