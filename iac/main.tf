@@ -1,18 +1,17 @@
-# main.tf.
-
 provider "aws" {
   region = "us-east-1"
 }
 
 terraform {
-  backend "local" {
-    path = "terraform.tfstate"
+  backend "s3" {
+    bucket = "techinnovators-tfstate-vinay"
+    key    = "techinnovators/terraform.tfstate"
+    region = "us-east-1"
   }
 }
 
-
 resource "aws_vpc" "main" {
-  cidr_block           = "10.0.0.0/16"
+  cidr_block         = "10.0.0.0/16"
   enable_dns_hostnames = true
   tags = { Name = "TechInnovators-VPC" }
 }
@@ -163,28 +162,28 @@ resource "aws_security_group" "rds_sg" {
 }
 
 resource "aws_db_subnet_group" "main" {
-  name       = "techinnovators-db-subnet-group"
+  name        = "techinnovators-db-subnet-group"
   subnet_ids = [aws_subnet.private_az1.id, aws_subnet.private_az2.id]
   tags = { Name = "TechInnovators-DB-SubnetGroup" }
 }
 
 resource "aws_db_instance" "postgresql_db" {
-  allocated_storage           = 20
-  storage_type                = "gp2"
-  engine                      = "postgres"
-  engine_version              = "17.4"
-  instance_class              = "db.t3.micro"
-  db_name                     = "blogdb"
-  username                    = "adminuser"
-  password                    = "adminpassword"
-  vpc_security_group_ids      = [aws_security_group.rds_sg.id]
-  db_subnet_group_name        = aws_db_subnet_group.main.name
-  skip_final_snapshot         = true
-  publicly_accessible         = true
-  storage_encrypted           = false
+  allocated_storage         = 20
+  storage_type              = "gp2"
+  engine                    = "postgres"
+  engine_version            = "17.4"
+  instance_class            = "db.t3.micro"
+  db_name                   = "blogdb"
+  username                  = "adminuser"
+  password                  = "adminpassword"
+  vpc_security_group_ids    = [aws_security_group.rds_sg.id]
+  db_subnet_group_name      = aws_db_subnet_group.main.name
+  skip_final_snapshot       = true
+  publicly_accessible       = true
+  storage_encrypted         = false
   performance_insights_enabled = true
-  apply_immediately           = true
-  copy_tags_to_snapshot       = true
+  apply_immediately         = true
+  copy_tags_to_snapshot     = true
   tags = { Name = "TechInnovators-PostgreSQL-DB" }
 }
 
