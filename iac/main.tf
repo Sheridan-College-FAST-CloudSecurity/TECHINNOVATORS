@@ -5,12 +5,11 @@ provider "aws" {
 }
 
 terraform {
-  backend "s3" {
-    bucket = "techinnovators-tfstate-vinay"
-    key    = "techinnovators/terraform.tfstate"
-    region = "us-east-1"
+  backend "local" {
+    path = "terraform.tfstate"
   }
 }
+
 
 resource "aws_vpc" "main" {
   cidr_block           = "10.0.0.0/16"
